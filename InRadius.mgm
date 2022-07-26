@@ -1,0 +1,18 @@
+//Finds the radius of the sphere inscribed in 3D lattice polytope P and centered at 
+//Finds the barycenter of a lattice polytope P.
+
+load "Barycenter.mgm";
+
+function InRadius(P)
+R:=RealField(30);
+w:=Barycenter(P);
+I:=Inequalities(P);
+d:=[(Norm((i[1]))^(-1/2)*(R!(i[1]*w)-R!i[2])): i in I]; //computes the distances from barycenter w to the facets
+min,k:=Minimum(d);
+return min;
+end function;
+
+//Test Case
+//P:=Polytope([[0,0,0],[3,5,1],[7,9,2],[5,8,12]]);
+//Output:
+//0.174988696842034652273498446888

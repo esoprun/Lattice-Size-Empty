@@ -1,0 +1,60 @@
+//Uses Basis Reduction from [2] in combination with the Brute Force Algorithm
+//to compute the lattice size of a lattice polytope 
+//P in R^3. Outputs the lattice size of P and matrix C such that
+//L1(P*C)=ls(P). The Brute Force Algorithm is described in the
+//Introduction of [1]. 
+
+load "BasisReduction3D.mgm";
+load "GeneralizedNLS.mgm";
+
+//ran 100 experimemts. On average, it took 103.355 sec versus 34.141 sec. 
+function BruteForceLS(P)
+  A,Q:=BasisReduction3D(P);     //Q=P*A  
+  l,A1:=GeneralizedNLS(Q);  
+  Q1:=Q*A1; // L1(Q1)=l and Q1=P*A*A1
+  R:=RealField(30);
+  B:=ScalarMatrix(3,1); 
+  lreal:=R!l;
+  r:=InRadius(Q1);
+  b:=lreal/r;
+  Directions:=[];
+  D:=Dual(Ambient(Q1));
+  for i in [-Floor(b)..Floor(b)] do
+      for j in [-Floor(b)..Floor(b)] do
+          for k in [-Floor(b)..Floor(b)] do
+              if i*i+j*j+k*k lt Floor(b)*Floor(b) and GCD(GCD(i,j),k) eq 1 then
+                  v:=D![i,j,k];
+                  if Width(Q1,v) le l then Append(~Directions,[i,j,k]);
+                  end if;
+              end if;
+          end for;
+      end for;
+  end for;
+     d:=#Directions;
+     for i in [1..d] do
+      for j in [i+1..d] do
+          for k in [j+1..d] do           
+                M:=Matrix([Directions[i], Directions[j],Directions[k]]);       
+                  if Determinant(M) eq 1 or Determinant(M) eq -1 then            
+                     Q2:=Q1*Transpose(M);
+                     m:=L1(Q2); 
+                     l:=Minimum(m,l);
+                         if l eq m then B:=M; 
+                         end if;
+                    end if;
+          end for;
+      end for;
+     end for; 
+   return l,A*A1*Transpose(B); //L1(P*A*A1*Transpose(B))=l
+end function;
+
+
+//Test Case
+//P:=Polytope([[0,0,0],[3,5,1],[7,9,2],[5,8,12]]);
+//BruteForceLS(P);
+//Output:
+//9 
+//[ 3 -7  3]
+//[-2  6 -3]
+//[ 0 -1  1]
+//Time: 1.790

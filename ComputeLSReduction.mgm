@@ -1,0 +1,162 @@
+//This function computes an approximation of the lattice size of lattice width one lattice polytope P using basis reduction.
+//P is the convex hull of two polygons: P0 at the level x=0 and P1 at the level x=1.
+//It returns this approximation l and a matrix C such that L1(P*C)=l.
+//Here P0 and P1 are two polygons in the 2-plane. P is then defined as the convex hull of P0 and P1.
+//We first pass to Q such that the standard basis in Minkowski reduced wrt Q.
+
+//We next look for Minkowski reduced bases of the form (\pm e_1, ae_1\pm e_2,be_1+ce_2\pm e_3) and compute
+//L1 over such bases after we apply the corresponding map.
+
+//Let h1=e_1, h2=e_2, h3=e_3.
+//We first work with basis (h1, i*h2+h3,h3) for i=1 and look for j such that |j*h1+i*h2+h3|=|h3|. For this, start with j=0
+//and increase j by 1 while the width(norm) is decreasing. Then if |j*h1+i*h2+h3|=|h3|, find GeneralizedNLS in this basis
+//and next decrease j by 1 while the equality is preserved and find GeneralizedNLS for the obtained basis.
+//Next, do the same, but starting with j=0 decrease j by 1.
+//If for given i the  set of j with  |j*h1+i*h2+h3|=|h3| is nonempty, increase i by 1 and repeat. 
+
+
+load "BasisReduction3D.mgm";
+load "GeneralizedNLS.mgm";
+
+
+function ComputeLSReduction(P0,P1) 
+        P:=MakeP(P0,P1);          
+        A,Q:=BasisReduction3D(P);     //Q=P*A
+ 
+        l,B:=GeneralizedNLS(Q);  //Q*B
+  
+        
+        D:=Dual(Ambient(Q));
+        h1:=D![1,0,0];
+        h2:=D![0,1,0];
+        h3:=D![0,0,1];    
+        
+        terminate:=0;
+        i:=1;
+        while terminate eq 0 do
+               j:=0;
+               term_plus:=0;
+               while Width(Q,(j+1)*h1+i*h2+h3) le Width(Q,j*h1+i*h2+h3) do
+                  j:=j+1;
+               end while;  
+               if  Width(Q,j*h1+i*h2+h3) eq Width(Q,h3) then
+                    j1:=j;
+                    M:=Transpose(Matrix([[1,0,0],[0,1,0],[j1,i,1]]));  
+                    l1,A1:=GeneralizedNLS(Q*M);  
+                    if l1 lt l then l:=l1; B:=M*A1;
+                    end if;
+                 while Width(Q,(j-1)*h1+i*h2+h3) eq Width(Q,h3) do
+                   j:=j-1;
+                 end while;
+                    j2:=j;   
+                    if j1 ne j2 then              
+                      M:=Transpose(Matrix([[1,0,0],[0,1,0],[j2,i,1]]));  
+                      l1,A1:=GeneralizedNLS(Q*M);  
+                       if l1 lt l then l:=l1; B:=M*A1;
+                       end if;
+                     end if;                    
+                else term_plus:=1;
+                end if;  
+                    
+                    
+               term_minus:=0;  
+               j:=0; 
+               if term_plus eq 1 and (Width(Q,i*h2+h3) gt Width(Q,h3)) then      
+                while Width(Q,(j-1)*h1+i*h2+h3) le Width(Q,j*h1+i*h2+h3) do
+                  j:=j-1;
+                end while;  
+                if  Width(Q,j*h1+i*h2+h3) eq Width(Q,h3) then
+                    j1:=j;
+                    M:=Transpose(Matrix([[1,0,0],[0,1,0],[j1,i,1]]));  
+                    l1,A1:=GeneralizedNLS(Q*M);  
+                    if l1 lt l then l:=l1; B:=M*A1;
+                    end if;
+                    while Width(Q,(j+1)*h1+i*h2+h3) eq Width(Q,h3) do
+                      j:=j+1;
+                    end while;
+                    j2:=j;   
+                    if j2 ne j1 then 
+                     M:=Transpose(Matrix([[1,0,0],[0,1,0],[j2,i,1]]));  
+                     l1,A1:=GeneralizedNLS(Q*M);  
+                     if l1 lt l then l:=l1; B:=M*A1;
+                     end if;
+                    end if;     
+                else term_minus:=1;
+                end if; 
+               end if;
+              i:=i+1;
+              terminate:=term_plus*term_minus;           
+        end while;        
+            
+        terminate:=0;
+        i:=-1;
+        while terminate eq 0 do
+               j:=0;
+               term_plus:=0;
+               while Width(Q,(j+1)*h1+i*h2+h3) le Width(Q,j*h1+i*h2+h3) do
+                  j:=j+1;
+               end while;  
+               if  Width(Q,j*h1+i*h2+h3) eq Width(Q,h3) then
+                    j1:=j;
+                    M:=Transpose(Matrix([[1,0,0],[0,1,0],[j1,i,1]]));  
+                    l1,A1:=GeneralizedNLS(Q*M);  
+                    if l1 lt l then l:=l1; B:=M*A1;
+                    end if;
+                 while Width(Q,(j-1)*h1+i*h2+h3) eq Width(Q,h3) do
+                   j:=j-1;
+                 end while;
+                    j2:=j;   
+                    if j1 ne j2 then              
+                      M:=Transpose(Matrix([[1,0,0],[0,1,0],[j2,i,1]]));  
+                      l1,A1:=GeneralizedNLS(Q*M);  
+                       if l1 lt l then l:=l1; B:=M*A1;
+                       end if;
+                     end if;                    
+                else term_plus:=1;
+                end if;  
+                    
+                    
+               term_minus:=0;  
+               j:=0; 
+               if term_plus eq 1 and (Width(Q,i*h2+h3) gt Width(Q,h3)) then      
+                while Width(Q,(j-1)*h1+i*h2+h3) le Width(Q,j*h1+i*h2+h3) do
+                  j:=j-1;
+                end while;  
+                if  Width(Q,j*h1+i*h2+h3) eq Width(Q,h3) then
+                    j1:=j;
+                    M:=Transpose(Matrix([[1,0,0],[0,1,0],[j1,i,1]]));  
+                    l1,A1:=GeneralizedNLS(Q*M);  
+                    if l1 lt l then l:=l1; B:=M*A1;
+                    end if;
+                    while Width(Q,(j+1)*h1+i*h2+h3) eq Width(Q,h3) do
+                      j:=j+1;
+                    end while;
+                    j2:=j;   
+                    if j2 ne j1 then 
+                     M:=Transpose(Matrix([[1,0,0],[0,1,0],[j2,i,1]]));  
+                     l1,A1:=GeneralizedNLS(Q*M);  
+                     if l1 lt l then l:=l1; B:=M*A1;
+                     end if;
+                    end if;     
+                else term_minus:=1;
+                end if; 
+               end if;
+              i:=i-1;
+              terminate:=term_plus*term_minus;           
+           end while;       
+        return l,A*B; //l=L1(P*A*B)
+    end function;
+
+
+//Test Case:
+//
+//P0:=Polytope([[-5,-6],[-6,7],[-4,3],[-1,4]]);
+//P1:=Polytope([[1,-3],[7,6],[2,-6],[3,-6],[-4,-7]]);
+//time ComputeLSReduction(P0,P1);
+//Output:
+//18 
+//[ 1  8  1]
+//[ 0 -1  0]
+//[ 0  0  1]
+//Time: 0.180
+

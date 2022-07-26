@@ -1,0 +1,34 @@
+//For a lattice polytope P in R^3 and lattice vectors h1, h2, h3 in Z^3 orders the vectors so that Width(P,h1)<=Width(P,h2)<=Width(P,h3) 
+
+function OrderVectors(P,h1,h2,h3); 
+    wid1:=Width(P,h1);
+    wid2:=Width(P,h2);
+    wid3:=Width(P,h3);
+    if wid1 eq wid2 and wid1 eq wid3 then
+       return h1, h2, h3; 
+    end if;
+    //Sort h1,h2, h3 so that |h1|<=|h2|<=|h3|
+    Wid:=[wid1,wid2,wid3];
+    minW,i:=Minimum(Wid);
+    maxW,k:=Maximum(Wid);
+    j:=6-i-k;
+    L:=[h1,h2,h3];
+    D:=Dual(Ambient(P));
+    h1:=D!L[i];
+    h2:=D!L[j];
+    h3:=D!L[k];
+    return h1, h2, h3;
+ end function;   
+
+
+//Test Case
+//P:=Polytope([[3,0,-2],[-5,2,2],[-4,3,2],[-1,1,1]]);
+//D:=Dual(Ambient(P));
+//h1:=D![1,0,0];
+//h2:=D![0,1,0];
+//h3:=D![0,0,1];
+//OrderVectors(P,h1,h2,h3);
+//Output:
+//(0, 1, 0)
+//(0, 0, 1)
+//(1, 0, 0)

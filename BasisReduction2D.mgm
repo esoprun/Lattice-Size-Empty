@@ -1,0 +1,32 @@
+//Finds a reduced basis wrt P in the (e1,e2)-plane
+//Takes in a polytope with Width(e1,P)<=Width(e2,P)<=Width(e3,P) and 
+// reduces basis (e1,e2). That is, for the returned matrix A, we have
+//Width(e_1\pm e_2, P*A)>=Width(e_2, P*A)>=Width(e_1, P*A).
+//This function is the implementation of Algorithm 2.5 from [2]. 
+
+load "BasisReductionStep2D.mgm";
+
+function BasisReduction2D(P);
+terminate2D:=0;
+ E:=Ambient(P);
+ D:=Dual(Ambient(P));
+ A:=ScalarMatrix(3,1);
+Q:=P;
+while terminate2D eq 0 do      
+    h1,h2,terminate2D:=BasisReductionStep2D(Q);   
+    h3:=D![0,0,1];
+    H:=Transpose(Matrix([h1,h2,h3]));
+    Q:=Q*H;
+    A:=A*H;    
+end while;      
+    return A; //(e1,e2) is reduced wrt to P*A 
+ end function;
+
+//Test Case
+//P:=Polytope([[0,0,0],[3,5,1],[7,9,2],[5,8,12]]);
+//BasisReduction2D(P);
+//Output:
+//[-1  3  0]
+//[ 1 -2  0]
+//[ 0  0  1]
+//Note that the columns are the basis vectors

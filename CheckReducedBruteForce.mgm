@@ -1,0 +1,63 @@
+//Checks for Example 5.1 in  [1] that there is no reduced basis that computes the lattice size of
+//P=Polytope([[0,2,5],[0,-2,5],[0,1,-6],[1,-8,5],[1,2,-5],[1,-4,-3]]).
+//The standard basis is Minkowski  reduced and the norms of the reduced basis here are 1, 10, 11.
+//We create lists Directions1, Directions2, and Directions 3 with directions of norms 1, 10, 11 correspondingly
+//and then looks for  matrices A with first row from the first list, second row from the second list,
+//and the third row from the third such that L1(P*A)=13.
+
+
+function CheckReducedBruteForce(P)
+  R:=RealField(30);
+  B:=ScalarMatrix(3,1);
+  l,N:=NLS(P);  
+  l:=R!l;
+  r:=InRadius(P);
+  b:=l/r;
+  Directions1:=[];
+  Directions2:=[];
+  Directions3:=[];
+  D:=Dual(Ambient(P));
+  for i in [-Floor(b)..Floor(b)] do
+      for j in [-Floor(b)..Floor(b)] do
+          for k in [-Floor(b)..Floor(b)] do
+              v:=D![i,j,k];
+              if Width(P,v) eq 1 and GCD(GCD(i,j),k) eq 1 then Append(~Directions1,[i,j,k]);
+                  end if;
+              if Width(P,v)  eq 10 and GCD(GCD(i,j),k) eq 1 then Append(~Directions2,[i,j,k]);
+                  end if;
+               if Width(P,v) eq 11 and GCD(GCD(i,j),k) eq 1 then Append(~Directions3,[i,j,k]);
+                  end if;
+          end for;
+      end for;
+  end for;             
+     l, N:=NLS(P);  
+    
+     d1:=#Directions1;
+     d2:=#Directions2;
+     d3:=#Directions3;
+     
+     for i in [1..d1] do
+      for j in [1..d2] do
+          for k in [1..d3] do           
+                A:=Matrix([Directions1[i], Directions2[j],Directions3[k]]);       
+                  if Determinant(A) eq 1 or Determinant(A) eq -1 then            
+                     R:=P*Transpose(A);
+                     if L1(R) eq 13 then A; B:=A; //If such a matrix is found it will be printed here.
+                   //  m:=L1(R); 
+                   //  l:=Minimum(m,l);
+                  //       if l eq m then B:=A; 
+                 //        end if;
+                     end if;
+                  end if;       
+          end for;
+      end for;
+     end for; 
+   return 0; //Just a placeholder 
+end function;
+
+
+//Test Case
+//P:=Polytope([[0,2,5],[0,-2,5],[0,1,-6],[1,-8,5],[1,2,-5],[1,-4,-3]]);
+//time CheckReducedBruteForce(P);
+//Output: 0
+//Time: 98.460

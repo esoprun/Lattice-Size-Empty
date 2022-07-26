@@ -1,0 +1,84 @@
+ 
+ //Here we compute the lattice size of a random width one lattice polytope P using BruteForceLS,
+ // and also compute the approximation of its lattice size using Basis Reduction. If the two answers do not match,
+ //we output the bases P0 and P1 of P. 
+ //Here P0 is a random polygon in the plane x=0, defined as a convex
+ //hull of n0:=Random([3..10]) points (y,z) with |y|,|z|<=7.
+ //P1 is a random polygon in the plane x=1, defined similarly.
+
+load "ComputeLSReduction.mgm";
+load "MakeP.mgm";
+load "BruteForceLS.mgm";
+load "L1.mgm";
+
+//We ran 5000 such experiments and found 2 examples where the answers do not match. One of them is described in
+//Example 5.1 in [1]
+function Experiment3a(n)
+      count:=0; 
+    for i in [1..n] do
+      n0:=Random([3..10]);  
+      P0:=RandomPolytope(2,n0,7);
+   // Random 2D polygon which a convex hull of k points x_i with |x_i|<=7
+       n1:=Random([3..10]); 
+      P1:=RandomPolytope(2,n1,7);
+     // P0;P1;
+      l1,A:=ComputeLSReduction(P0,P1); //approximation to Lattice size computed using basis reduction 
+      l1;
+      P:=MakeP(P0,P1);
+   //   l1; L1(P*A)     
+      l2:=BruteForceLS(P);  //Lattice size computed using basis reduction and brute force
+      l2;
+        if l1 eq l2 then count:=count+1; //compare the two answers
+   //      count;
+           else return P0,P1;
+        end if;        
+      end for;
+     return count;
+ end function;
+
+//Test Case
+//Experiment3a(1);
+//Output:
+//21 
+//21
+//1
+//1
+
+
+
+  /////////////////////////////////////////////////////////////////////////
+ //This is a version of Experiment3a. The only difference being that
+ //the magnitudes of the y and z-coordinates of points in P0 
+ //are bounded by 3 and there are 3 to 7 such points.
+//We ran 5000 such experiments and in each of them the two answers matched.
+
+function Experiment3b(n);
+      count:=0; 
+    for i in [1..n] do
+      k0:=Random([3..7]);  
+      P0:=RandomPolytope(2,k0,3);
+   // Random 2D polygon which a convex hull of k points x_i with |x_i|<=3
+       k1:=Random([3..7]); 
+   P1:=RandomPolytope(2,k1,3);
+ //     P0;P1;
+      l1,A:=ComputeLSReduction(P0,P1);
+      l1;
+      P:=MakeP(P0,P1);
+   //   l1; L1(P*A)     
+      l2:=BruteForceLS(P);
+      l2;
+        if l1 eq l2 then count:=count+1;
+   //      count;
+           else return P0,P1;
+        end if;        
+      end for;
+     return count;
+ end function;
+
+
+//Test Case
+//Experiment3b(1);
+//Output:
+ //9
+ //9
+//1

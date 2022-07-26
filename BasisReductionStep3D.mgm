@@ -1,0 +1,88 @@
+//This step is based on Proposition 2.7 and Theorem 2.8 from [2]
+
+
+function BasisReductionStep3D(P)
+
+D:=Dual(Ambient(P));
+h1:=D![1,0,0];
+h2:=D![0,1,0];
+h3:=D![0,0,1];
+
+wid1:=Width(P,h1);
+wid2:=Width(P,h2);
+wid3:=Width(P,h3);
+
+
+//Find i,j in Z such that |ih1+jh2+h3|-> min.
+
+
+widmin:=wid3;
+f:=h3;
+for i in [-Floor(2*wid3/wid1)..Floor(2*wid3/wid1)] do
+  M:=[Floor(i*wid1+wid3/wid2),Ceiling(i*wid1+wid3/wid2),-Floor(i*wid1+wid3/wid2),-Ceiling(i*wid1+wid3/wid2)];
+          for j in M do
+           h:=i*h1+j*h2+h3;
+           widmin:=Minimum(widmin,Width(P,h));
+           if Width(P,h) eq widmin then
+               f:=h;
+           end if;    
+         end for;
+end for; 
+    
+for j in [-Floor(2*wid3/wid2)..Floor(2*wid3/wid2)] do
+    widj:=Width(P,j*h2+h3);
+    for i in [Floor((widj-wid2)/wid1)..Floor((widj+wid2)/wid1)] do 
+            //may be ensure first that i>=0? 
+            h:=i*h1+j*h2+h3;
+            widmin:=Minimum(widmin,Width(P,h));
+            if Width(P,h) eq widmin then
+               f:=h;
+            end if;            
+            h:=-i*h1+j*h2+h3;
+            widmin:=Minimum(widmin,Width(P,h));
+            if Width(P,h) eq widmin then
+               f:=h;
+            end if;
+         end for;
+end for;
+    
+///
+///
+
+if widmin lt wid2 then return h1,h2,f,0;
+else
+   for j in [-Floor(2*wid3/wid2)..Floor(2*wid3/wid2)] do    
+         for i in [-Floor((2*wid3+Abs(j)*wid2)/wid1)..Floor((2*wid3+Abs(j)*wid2)/wid1)] do
+           if Abs(i) ge Abs(j) then
+              h:=i*h1+j*h2+h3;
+             widmin:=Minimum(widmin,Width(P,h));
+             if Width(P,h) eq widmin then
+               f:=h;
+            end if; 
+           end if;   
+         end for;
+   end for;     
+           for i in [-Floor(2*wid3/wid1)..Floor(2*wid3/wid1)] do    
+              for j in [-Floor((2*wid3+Abs(i)*wid1)/wid2)..Floor((2*wid3+Abs(i)*wid1)/wid2)] do
+                if Abs(i) lt Abs(j) then
+                   h:=i*h1+j*h2+h3;
+                  widmin:=Minimum(widmin,Width(P,f));
+                     if Width(P,h) eq widmin then
+                        f:=h;
+                     end if; 
+                end if;   
+              end for;
+            end for;    
+return h1,h2,f,1;    
+end if;    
+end function;
+
+
+//Test Case
+//P:=Polytope([[0,0,0],[3,5,1],[7,9,2],[5,8,12]]);
+//BasisReductionStep3D(P);
+//Output:
+//(1, 0, 0)
+//(0, 1, 0)
+//(2, -2, 1)
+//1

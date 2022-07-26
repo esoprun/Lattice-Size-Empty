@@ -1,0 +1,68 @@
+//Starts with a 3D lattice width one polytope P,  which is a convex hull of two polygons in the planes x=0 and x=1.
+// Applies to P each of the eight matrices M with \pm 1 in  each of the diagonal
+//entries. Then for each of the obtained Q, shifts its layers in x=0 and x=1 so that both  of them are in the
+//positive orthants in these planes and touch the coordinates axes. For each M, compute L1(Q) for
+//the shifted Q. Find the minimum of L1. Return l=L1(Q) and matrix M*B such that Q=P*M*B and
+//L1(Q)=L1(P*M*B).
+//See the definition of nls(P) in [1].
+
+load "L1.mgm";
+
+function GeneralizedNLS(P)
+        List:=[];
+        ListShift:=[];
+        Signs:=Matrix([[1,1,1],[-1,1,1],[1,-1,1],[1,1,-1],[-1,-1,1],[-1,1,-1],[1,-1,-1],[-1,-1,-1]]); 
+     for i in [1..8] do
+          M:=ScalarMatrix(3,1);
+          M[1,1]:=Signs[i,1]; M[2,2]:=Signs[i,2]; M[3,3]:=Signs[i,3];
+          Q:=P*M;        
+          V:=Vertices(Q);
+          L:=Ambient(Q);
+          D:=Dual(L);
+          e1:=D.1;
+          e2:=D.2;
+          e3:=D.3;
+          minY0:=V[1]*e2; 
+          minZ0:=V[1]*e3;
+          minY1:=V[#V]*e2; 
+          minZ1:=V[#V]*e3;
+          k:=#(V);
+          for j in [2..k-1] do
+            if V[j]*e1 eq 0 then  
+              minY0:=Minimum(V[j]*e2,minY0);
+              minZ0:=Minimum(V[j]*e3,minZ0);
+            end if;
+            if V[j]*e1 eq 1 or V[j]*e1 eq -1 then 
+              minY1:=Minimum(V[j]*e2,minY1);
+              minZ1:=Minimum(V[j]*e3,minZ1);
+            end if;    
+           end for;     
+          Shift0:=L![0,Floor(minY0),Floor(minZ0)];
+          Shift1:=L![0,Floor(minY1),Floor(minZ1)];
+           for j in [1..k] do
+              if V[j]*e1 eq 0 then  
+                 V[j]:=V[j]-Shift0;
+               end if;
+              if V[j]*e1 eq 1 or V[j]*e1 eq -1 then 
+                 V[j]:=V[j]-Shift1;
+              end if;    
+            end for;    
+          Q:=Polytope(V);
+          Append(~List,L1(Q));
+          Append(~ListShift,Shift1-Shift0);
+      end for; 
+            l,i:=Minimum(List);  
+            M:=ScalarMatrix(3,1);
+            M[1,1]:=Signs[i,1]; M[2,2]:=Signs[i,2]; M[3,3]:=Signs[i,3];
+            B:=Matrix([e1-D!ListShift[i]*M[1,1],e2,e3]);  
+            return l,M*B;
+   end function;  
+ 
+//Test Case
+//P:=Polytope([[0,0,0],[3,5,1],[7,9,2],[5,8,12]]);
+//GeneralizedNLS(P);
+//Output:
+//16 
+//[ -1   8 -12]
+//[  0  -1   0]
+//[  0   0   1]

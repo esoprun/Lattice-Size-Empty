@@ -1,0 +1,105 @@
+ //Here we are comparing the running time of the BruteForceOriginal algorithm and
+ //Algorithm 3.2 from [1]. We run both of them on empty polytopes P of the form
+ //P=Polytope([[0,0,0],[0,1,0],[0,0,1],[0,1,1],[1,0,0],[1,a,b],[1,c,d],[1,a+c,b+d]]),
+  //where a,b,c, and d are picked randomly in the interval from 1 to 6.
+  //We then check that ad-bc=\pm 1. If this is the case, we then run both algorithms
+  //and output the average running time for n such experiments.
+  
+load "BruteForceOriginal.mgm";
+load "BasisReduction3D.mgm";
+load "GeneralizedNLS.mgm";
+
+//We ran 25 experiments. The average running time for the BruteForceOriginal was 1196.697  sec
+//while the average running time for Algorithm 3.2 was 0.198 sec
+function Experiment2a(n)
+ t1:=0;
+ t2:=0;
+ count:=0;
+ while count lt n do
+      a:=Random([1..6]);
+      b:=Random([1..6]);
+      c:=Random([1..6]);
+      d:=Random([1..6]);
+        if a*d-b*c eq 1 or a*d-b*c eq -1  then
+	    count:=count+1;        
+            P:=Polytope([[0,0,0],[0,1,0],[0,0,1],[0,1,1],[1,0,0],[1,a,b],[1,c,d],[1,a+c,b+d]]);
+	    P; count;
+            t:= Cputime();
+            BruteForceOriginal(P);     
+            t1:=t1+Cputime(t);
+	    t:= Cputime();
+	    A,P:=BasisReduction3D(P);     
+            GeneralizedNLS(P);      
+            t2:=t2+Cputime(t);
+	 end if;   
+ end while;    
+     return t1/n, t2/n;
+end function;
+
+//Test Case
+//Experiment2a(1);
+//Output:
+//    (0, 0, 0),
+//    (0, 1, 0),
+//    (0, 0, 1),
+//    (0, 1, 1),
+//    (1, 0, 0),
+//    (1, 1, 3),
+//    (1, 2, 5),
+//    (1, 3, 8)
+//1
+//4 
+//[ 0  1  1]
+//[ 1  0  2]
+//[ 0  0 -1]
+//4 
+//[ 1  0 -1]
+//[ 0 -1  0]
+//[ 0  0  1]
+//497.220 0.190
+
+
+
+//Next we ran 100 Experiments with a, b, c, and d bounded by 25,  only using Algorithm 3.2. . The average running time  was 0.831 sec.
+//(These examples are too large for the Brute Force Algorithm.)
+
+function Experiment2b(n)
+ t1:=0;
+ count:=0;
+ while count lt n do
+      a:=Random([1..25]);
+      b:=Random([1..25]);
+      c:=Random([1..25]);
+      d:=Random([1..25]);
+        if a*d-b*c eq 1 or a*d-b*c eq -1  then
+	    count:=count+1;        
+            P:=Polytope([[0,0,0],[0,1,0],[0,0,1],[0,1,1],[1,0,0],[1,a,b],[1,c,d],[1,a+c,b+d]]);
+	    P; count;            
+	    t:= Cputime();
+	    A,P:=BasisReduction3D(P);     
+            GeneralizedNLS(P);      
+            t1:=t1+Cputime(t);
+	 end if;   
+ end while;    
+     return t1/n;
+end function;
+
+//Test Case
+//Experiment2b(1);
+//Output:
+//3-dimensional polytope P with 8 generators:
+//   (0, 0, 0),
+//   (0, 1, 0),
+//    (0, 0, 1),
+//    (0, 1, 1),
+//    (1, 0, 0),
+//    (1, 1, 1),
+//    (1, 1, 2),
+//    (1, 2, 3)
+//1
+//3 
+//[-1  1 -1]
+//[ 0  1  0]
+//[ 0  0  1]
+//0.170
+

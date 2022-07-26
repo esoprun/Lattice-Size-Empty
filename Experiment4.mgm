@@ -1,0 +1,41 @@
+ //Here we are comparing the running time of BruteForceOriginal
+//and BruteForceLS. In BruteForceLS we first apply basis reduction to get an
+//approximation of the lattice size and then use the Brute Force algorithm.
+
+
+load "MakeP.mgm";
+load "BruteForceOriginal.mgm";
+load "BruteForceLS.mgm";
+
+function Experiment4(n)
+  t1:= 0; //Overall running time of  BruteForceOriginal(P);
+  t2:= 0; //Overall running time of  BruteForceLS(P);
+ for i in [1..n] do
+      i;
+      k0:=Random([3..10]);  
+      P0:=RandomPolytope(2,k0,7);
+      k1:=Random([3..10]); 
+      P1:=RandomPolytope(2,k1,7);
+      P:=MakeP(P0,P1);
+      t:= Cputime();
+      BruteForceOriginal(P);     
+      t1:=t1+Cputime(t); 
+      t:= Cputime();
+      BruteForceLS(P);       
+      t2:=t2+Cputime(t); 
+ end for;    
+ return t1/n,t2/n;
+ end function;
+
+//Test Case
+//Experiment4(1);
+//Output:
+//11 
+//[-1  0 11]
+//[ 0 -1  1]
+//[ 0  0 -1]
+//11 
+//[-10   0  -1]
+//[  0  -1   0]
+//[  1   0   0]
+//543.040 4.500

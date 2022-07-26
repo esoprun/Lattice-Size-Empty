@@ -1,0 +1,55 @@
+//This is the original version of the Brute Force Algorithm without the 
+//initial basis reduction.
+//This Algorithm is described in the introduction in [1]
+
+load "InRadius.mgm";
+load "L1.mgm";
+
+
+function BruteForceOriginal(P)    
+  R:=RealField(30);
+  B:=ScalarMatrix(3,1); 
+  l:=L1(P);
+  lreal:=R!l;
+  r:=InRadius(P);
+  b:=lreal/r;
+  Directions:=[];//This list will contain all directions v with Width(P,v)<=l
+  D:=Dual(Ambient(P));
+  for i in [-Floor(b)..Floor(b)] do
+      for j in [-Floor(b)..Floor(b)] do
+          for k in [-Floor(b)..Floor(b)] do
+              if i*i+j*j+k*k lt Floor(b)*Floor(b) and GCD(GCD(i,j),k) eq 1 then
+                  v:=D![i,j,k];
+                  if Width(P,v) le l then Append(~Directions,[i,j,k]);
+                  end if;
+              end if;
+          end for;
+      end for;
+  end for;              
+     d:=#Directions;
+     for i in [1..d] do
+      for j in [i+1..d] do
+          for k in [j+1..d] do           
+                M:=Matrix([Directions[i], Directions[j],Directions[k]]);       
+                  if Determinant(M) eq 1 or Determinant(M) eq -1 then            
+                     Q2:=P*Transpose(M);
+                     m:=L1(Q2); 
+                     l:=Minimum(m,l);
+                         if l eq m then B:=M; 
+                         end if;
+                    end if;
+          end for;
+      end for;
+     end for; 
+   return l,Transpose(B); 
+end function;
+
+//Test Case
+//P:=Polytope([[0,0,0],[3,5,1],[7,9,2],[5,8,12]]);
+//time BruteForceOriginal(P);
+//Output:
+//9
+//[ 1  3  3]
+//[-1 -3 -2]
+//[ 0  1  0]
+//Time: 1081.760

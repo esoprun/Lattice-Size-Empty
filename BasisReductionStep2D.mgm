@@ -1,0 +1,39 @@
+//Given a 3D lattice polytope P with |e_1|<=|e2|<=|e_3|, 
+// this function provides an iteration in reducing (e1,e2). Let h1=e1, h2=e2.
+//It finds i in Z such that |i*h1+h2|-> min. If |i*h1+h2|<|h1| it returns
+//f=i*h1+h2, h1 and terminate=1, which means that this the final iteration.
+//If |i*h1+h2|>=|h1| it returns h1, f=ih1+h2, and terminate=0 (not final).
+//This step is based on Theorem 2.8 from [2].
+
+function BasisReductionStep2D(P)
+
+D:=Dual(Ambient(P));
+h1:=D![1,0,0];
+h2:=D![0,1,0];
+
+wid1:=Width(P,h1);
+wid2:=Width(P,h2);
+
+//Find i in Z such that |ih1+h2|-> min.
+// First, check four values of i=\pm floor(|h2|/|h1|)
+//and \pm ceiling(|h2/h1|) and find such m with smallest value of |ih1+h2|.
+
+M:=[Floor(wid2/wid1),Ceiling(wid2/wid1),-Floor(wid2/wid1),-Ceiling(wid2/wid1)];
+minW,j:=Minimum([Width(P,i*h1+h2) : i in M]);
+
+if minW lt wid1 then //not the final iteration iteration
+    f:=M[j]*h1+h2;
+    return f,h1,0;
+else m:=Floor(2*wid2/wid1); //final iteration 
+    minW,j:=Minimum([Width(P,i*h1+h2) : i in [-m..m]]);
+    f:=(j-(m+1))*h1+h2;
+    return h1,f,1;
+end if;    
+end function;
+
+//Test Case
+//P:=Polytope([[0,0,0],[3,5,1],[7,9,2],[5,8,12]]);
+//Output:
+//(-1,1,0)
+//(1,0,0) 
+//0

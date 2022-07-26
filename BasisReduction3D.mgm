@@ -1,0 +1,80 @@
+//Finds a basis which is Minkowski reduced wrt given lattice polytope P in R^3  
+//This is based on Algorithm 3.11 from [2]: At each step, order the standard basis vectors (h1,h2,h3)
+//of Z^3 so that |h1|<=|h2|<=|h3| and reduce (h1,h2).
+//Then find f such that the minimum of |i*h1 + j*h2 + h3|
+//over i, j in Z is attained at f = i*h1 + j*h2 + h3.
+//If |f| < |h2|, pass to the basis (h1,h2,f) and repeat the step. If |f| ≥ |h2|,
+//output a reduced basis (h1,h2,f).
+
+
+
+load "OrderVectors.mgm";
+load "BasisReductionStep3D.mgm";
+load "BasisReduction2D.mgm";
+
+
+function BasisReduction3D(P)
+terminate:=0;
+ E:=Ambient(P);
+ D:=Dual(Ambient(P));
+ count:=0; //number of iterations
+A:=ScalarMatrix(3,1);
+Q:=P;
+while terminate eq 0 do   
+    h1:=D![1,0,0];
+    h2:=D![0,1,0];
+    h3:=D![0,0,1];
+    
+    h1,h2,h3:=OrderVectors(Q,h1,h2,h3);
+    H:=Transpose(Matrix([h1,h2,h3]));
+    Q:=Q*H;
+    A:=A*H;
+    
+    B:=BasisReduction2D(Q); 
+    Q:=Q*B;
+    A:=A*B;
+    
+    h1,h2,h3:=OrderVectors(Q,h1,h2,h3);
+    H:=Transpose(Matrix([h1,h2,h3]));
+    Q:=Q*H;
+    A:=A*H;
+    
+    h1,h2,h3,terminate:=BasisReductionStep3D(Q);   
+    H:=Transpose(Matrix([h1,h2,h3]));
+    Q:=Q*H;
+    A:=A*H;
+    count:=count+1;
+end while; 
+  //Make sure the basis is Minkowski reduced, based on Theorem 3.3, [1]
+    B:=Transpose(A);
+    h1:=D!B[1];
+    h2:=D!B[2];
+    h3:=D!B[3];
+    h1,h2,h3:= OrderVectors(P,h1,h2,h3);
+    L:=Matrix([[1,1,2],[1,-1,2], [1,1,-2], [1,-1,-2]]);
+    K:=L*B;//The rows of this matrix are k1=h1+h2+2h3, k2=h1-h2+2h3,k3=h1+h2-2h3, k4=h1-h2-2h3 
+    k1:=D!K[1]; k2:=D!K[2]; k3:=D!K[3]; k4:=D!K[4];
+    Widk:=[Width(P,k1),Width(P,k2),Width(P,k3), Width(P,k4)];
+    minWidk,i:=Minimum(Widk);
+    if minWidk lt Width(P,h3) then 
+        h3:=D!K[i];
+        h1,h2,h3:=OrderVectors(P,h1,h2,h3);
+        Q:=Q*H;       
+        A:=Transpose(Matrix([h1,h2,h3]));
+    end if;
+     return A,Q;
+end function;    
+
+
+//Test Case
+//P:=Polytope([[0,0,0],[3,5,1],[7,9,2],[5,8,12]]);
+//BasisReduction3D(P);
+//Output:
+//[-1  3  4]
+//[ 1 -2 -4]
+//[ 0  0  1]
+//3-dimensional polytope with 4 generators:
+//    (0,  0,  0),
+//    (2, -1, -7),
+//    (2,  3, -6),
+//    (3, -1,  0)
