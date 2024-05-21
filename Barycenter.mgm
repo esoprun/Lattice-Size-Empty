@@ -1,0 +1,17 @@
+//Finds the Barycenter of a lattice polytope P in R^3.
+
+function Barycenter(P)
+L:=Ambient(P);
+V:=Vertices(P);
+VP:=Zero(L);
+for p in V do
+    VP:=VP+p;
+end for;
+return VP/#V;
+end function;
+
+
+//Test Case
+//P:=Polytope([[0,2,5],[0,-2,5],[0,1,-6],[1,-8,5],[1,2,-5],[1,-4,-3]]);
+//Barycenter(P);
+//Output: (1/2, -3/2, 1/6)

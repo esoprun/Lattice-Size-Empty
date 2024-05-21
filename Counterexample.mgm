@@ -1,0 +1,106 @@
+
+//Computation to justify Example 6.1 in  [1] 
+//Here we checks that there is no reduced basis that computes the lattice size of
+//P=Polytope([[0,2,5],[0,-2,5],[0,1,-6],[1,-8,5],[1,2,-5],[1,-4,-3]]).
+
+
+//In IsReduced(P) we check  that the standard basis (e_1,e_2,e_3) is Minkowski reduced with respect to P. We have ||e_1||=1, $||e_2||=10 and ||e_3||=11.
+//We consider all \Z^3 bases (h_1,h_2,h_3) with ||h_i||<=11 and check that ||h_1||+||h_2||+||h_3||\geq 22.
+//As explained in the paper, a necessary condition for ||h_i||<=11 is that the absolute value of the components of h_i does not exceed 11/R where R is the radius of a ball B
+//contained in P. Function InRadius(P) finds such R.
+// Directions is a list of all primitive vectors h in Z^3 with the absolute value of components bounded from above by 11/R that also satisfy ||h||<= 11. 
+//We use vectors from this list to build all possible matrices A with rows h_1,h_2,h_3. If matrix A is unimodular we check whether $\Vert h_1\Vert+\Vert h_2\Vert+\Vert h_3\Vert\geq 22. 
+
+
+//In MinLsOverReduced(P) we use the same list Directions to build unimodular matrices A with rows h_i from the list and check that we always have l_1(AP)\geq 14.
+//This means that the minimum of l_1(AP) over all matrices A whose rows form a reduced basis of \Z^3 is bounded below by 14.
+
+
+load "InRadius.mgm";
+load "L1.mgm";
+
+function IsReduced(P)
+ans:=0;
+R:=RealField(30);
+ r:=InRadius(P);
+ b:=11/r;
+ Directions:=[]; 
+  D:=Dual(Ambient(P));
+  for i in [-Floor(b)..Floor(b)] do
+      for j in [-Floor(b)..Floor(b)] do
+          for k in [-Floor(b)..Floor(b)] do
+              v:=D![i,j,k];
+                  if Width(P,v) le 11 and GCD(GCD(i,j),k) eq 1 then Append(~Directions,[i,j,k]);
+                  end if;
+            end for;
+      end for;
+  end for;
+  d:=#Directions;
+  for i in [1..d] do
+      for j in [1..d] do
+          for k in [1..d] do    
+                h1:=Directions[i];
+                 h2:=Directions[j];
+                  h3:=Directions[k];  
+                  A:=Matrix([Directions[i], Directions[j],Directions[k]]);       
+                  if Determinant(A) eq 1 or Determinant(A) eq -1 then  
+                         if Width(P,D!h1)+Width(P,D!h2)+Width(P,D!h3) le 21 then
+                              A;
+                          ans:=1;
+                          end if; 
+                   end if;               
+          end for;
+      end for;
+     end for; 
+return ans;
+end function;
+
+function MinLsOverReduced(P)
+l1:=21;
+R:=RealField(30);
+ r:=InRadius(P);
+ b:=11/r;
+ Directions:=[]; 
+  D:=Dual(Ambient(P));
+  for i in [-Floor(b)..Floor(b)] do
+      for j in [-Floor(b)..Floor(b)] do
+          for k in [-Floor(b)..Floor(b)] do
+              v:=D![i,j,k];
+                  if Width(P,v) le 11 and GCD(GCD(i,j),k) eq 1 then Append(~Directions,[i,j,k]);
+                  end if;
+            end for;
+      end for;
+  end for;
+  d:=#Directions;
+  for i in [1..d] do
+      for j in [1..d] do
+          for k in [1..d] do    
+                h1:=Directions[i];
+                 h2:=Directions[j];
+                  h3:=Directions[k];  
+                  A:=Matrix([Directions[i], Directions[j],Directions[k]]);       
+                  if Determinant(A) eq 1 or Determinant(A) eq -1 then  
+                         R:=P*Transpose(A);
+                         l1:=Minimum(L1(R),l1);                          
+                   end if;              
+          end for;
+      end for;
+     end for; 
+return l1;
+end function;
+
+
+
+//Test Case 1
+//load "Counterexample.mgm";
+//P:=Polytope([[0,2,5],[0,-2,5],[0,1,-6],[1,-8,5],[1,2,-5],[1,-4,-3]]);
+//time IsReduced(P);
+//Output: 
+//Time: 
+
+
+//Test Case 2
+//P:=Polytope([[0,2,5],[0,-2,5],[0,1,-6],[1,-8,5],[1,2,-5],[1,-4,-3]]);
+//time MinLsOverReduced(P);
+//Output: 14
+//Time: 264.920

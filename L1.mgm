@@ -1,0 +1,26 @@
+//Given a lattice polytope P in R^3, computes L1(P)=max(x+y+z)-min(x)-min(y)-min(z), where all the 
+//extrema are computed over (x,y,z) in P.
+
+function L1(P)
+V:=Vertices(P);
+D:=Dual(Ambient(P));
+e:=D![1,1,1];
+e1:=D![1,0,0];
+e2:=D![0,1,0];
+e3:=D![0,0,1];
+M:=V[1]*e; m1:=V[1]*e1; m2:=V[1]*e2; m3:=V[1]*e3;
+for i in [2..#(V)] do
+   M:=Maximum(V[i]*e,M);
+   m1:=Minimum(V[i]*e1,m1);
+   m2:=Minimum(V[i]*e2,m2);
+   m3:=Minimum(V[i]*e3,m3);
+end for;
+return M-m1-m2-m3;  
+//M=max(x+y+z), m1=min(x), m2=min(y),  m3=min(z).
+end function;
+
+//Test Case
+//P:=Polytope([[0,0,0],[3,5,1],[7,9,2],[5,8,12]]);
+//L1(P);
+//Output:
+//25
