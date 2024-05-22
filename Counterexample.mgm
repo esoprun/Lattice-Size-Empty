@@ -20,7 +20,7 @@ load "InRadius.mgm";
 load "L1.mgm";
 
 function IsReduced(P)
-ans:=0;
+ans:=0; /this means a basis was not found with sum of norms less than 22
 R:=RealField(30);
  r:=InRadius(P);
  b:=11/r;
@@ -46,7 +46,7 @@ R:=RealField(30);
                   if Determinant(A) eq 1 or Determinant(A) eq -1 then  
                          if Width(P,D!h1)+Width(P,D!h2)+Width(P,D!h3) le 21 then
                               A;
-                          ans:=1;
+                          ans:=1;//this means a basis was found with sum of norms less than 22
                           end if; 
                    end if;               
           end for;
@@ -94,13 +94,14 @@ end function;
 //Test Case 1
 //load "Counterexample.mgm";
 //P:=Polytope([[0,2,5],[0,-2,5],[0,1,-6],[1,-8,5],[1,2,-5],[1,-4,-3]]);
-//time IsReduced(P);
-//Output: 
-//Time: 
+//IsReduced(P);
+//Output: 0 //means no basis with sum of norm less than 22
+
 
 
 //Test Case 2
+//load "Counterexample.mgm";
 //P:=Polytope([[0,2,5],[0,-2,5],[0,1,-6],[1,-8,5],[1,2,-5],[1,-4,-3]]);
-//time MinLsOverReduced(P);
+//MinLsOverReduced(P);
 //Output: 14
-//Time: 264.920
+
